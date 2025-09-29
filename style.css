@@ -1,0 +1,29 @@
+body {
+  font-family: sans-serif;
+  background: #111;
+  color: #eee;
+  padding: 20px;
+}
+
+.track {
+  margin-bottom: 25px;
+  padding: 10px;
+  border: 1px solid #444;
+  border-radius: 8px;
+}
+
+input[type="range"] {
+  width: 200px;
+}
+
+button {
+  margin-top: 10px;
+  margin-left: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+button.playing {
+  background: #4caf50;
+  color: #fff;
+}
