@@ -3,10 +3,7 @@ let trackCount = 0;
 // Lista fixa de trilhas sonoras
 const trilhas = [
   { nome: "Combat Music The Witcher.mp3", arquivo: "sons/Combat Music The Witcher.mp3" },
-  { nome: "Música aventura 1", arquivo: "sons/musica livre 1.mp3" },
-  { nome: "Myconid Village", arquivo: "sons/Myconid Village.mp3" },
-  { nome: "Floresta", arquivo: "sons/Floresta.mp3" },
-  { nome: "Musica Aventura estrada", arquivo: "sons/Rua-musica.mp3" },
+
 ];
 
 // Lista fixa de efeitos
@@ -14,7 +11,7 @@ const efeitos = [
   { nome: "Navio", arquivo: "sons/navio completo.mp3" },
   { nome: "Corda Navio", arquivo: "sons/corda.mp3" },
   { nome: "Tocha", arquivo: "sons/tocha.mp3" },
-  { nome: "Taverna Ambiente", arquivo: "sons/taverna ambien.mp3" },
+ 
   
 ];
 
