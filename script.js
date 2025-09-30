@@ -3,7 +3,7 @@ let trackCount = 0;
 // Lista fixa de trilhas sonoras
 const trilhas = [
   { nome: "Combat Music The Witcher.mp3", arquivo: "sons/Combat Music The Witcher.mp3" },
-  { nome: "Música aventura 1", arquivo: "musica livre 1.mp3" },
+  { nome: "Música aventura 1", arquivo: "sons/musica livre 1.mp3" },
   { nome: "Myconid Village", arquivo: "sons/Myconid Village.mp3" },
   { nome: "Floresta", arquivo: "sons/Floresta.mp3" },
   { nome: "Musica Aventura estrada", arquivo: "sons/Rua-musica.mp3" },
@@ -119,4 +119,5 @@ document.getElementById("stopAll").addEventListener("click", () => {
     }
   }
 });
+
 
