@@ -62,6 +62,8 @@ function loadTrack(playerId, btnId, src) {
   audio.src = src;
   btn.textContent = "▶️ Tocar";
   btn.classList.remove("playing");
+
+  // só reseta o botão se NÃO estiver em loop
   audio.onended = () => {
     if (!audio.loop) {
       btn.textContent = "▶️ Tocar";
@@ -91,6 +93,16 @@ function toggleLoop(playerId, btn) {
   audio.loop = !audio.loop;
   btn.textContent = audio.loop ? "🔁 Loop On" : "🔁 Loop Off";
   btn.classList.toggle("playing", audio.loop);
+
+  // se o loop estiver ativado, não deixa o onended resetar botão
+  if (audio.loop) {
+    audio.onended = null;
+  } else {
+    audio.onended = () => {
+      btn.textContent = "▶️ Tocar";
+      btn.classList.remove("playing");
+    };
+  }
 }
 
 // Botão "Adicionar Faixa"
