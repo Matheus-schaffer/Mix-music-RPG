@@ -2,17 +2,15 @@ let trackCount = 0;
 
 // Lista fixa de trilhas sonoras
 const trilhas = [
-  { nome: "Combat Music The Witcher.mp3", arquivo: "sons/Combat Music The Witcher.mp3" },
-
+  { nome: "Combat Music Pirates of the Caribbe.mp3", arquivo: "sons/Pirates of the Caribbe- combat.mp3" },
+  { nome: "Davy Jones theme", arquivo: "sons/Davy Jones theme.mp3" },
 ];
 
 // Lista fixa de efeitos
 const efeitos = [
-  { nome: "Navio", arquivo: "sons/navio completo.mp3" },
-  { nome: "Corda Navio", arquivo: "sons/corda.mp3" },
+  { nome: "Navio", arquivo: "sons/navio completo3.mp3" },
+  { nome: "Mar", arquivo: "sons/Efeito Mar.mp3" },
   { nome: "Tocha", arquivo: "sons/tocha.mp3" },
- 
-  
 ];
 
 // Função para criar um novo player
@@ -21,7 +19,6 @@ function addTrack() {
   const div = document.createElement("div");
   div.classList.add("track");
 
-  const selectId = `select${trackCount}`;
   const playerId = `player${trackCount}`;
   const btnId = `btn${trackCount}`;
 
@@ -29,21 +26,22 @@ function addTrack() {
     <div class="track-box">
       <div class="track-title">🎵 Trilha ${trackCount}</div>
       <label>Trilha Sonora:</label>
-      <select id="trilha${trackCount}" onchange="loadTrack('${playerId}','${btnId}', this.value)">
+      <select onchange="loadTrack('${playerId}','${btnId}', this.value)">
         <option value="">-- Selecione uma trilha --</option>
         ${trilhas.map(m => `<option value='${m.arquivo}'>${m.nome}</option>`).join("")}
       </select>
       <br>
       <label>Efeito:</label>
-      <select id="efeito${trackCount}" onchange="loadTrack('${playerId}','${btnId}', this.value)">
+      <select onchange="loadTrack('${playerId}','${btnId}', this.value)">
         <option value="">-- Selecione um efeito --</option>
         ${efeitos.map(e => `<option value='${e.arquivo}'>${e.nome}</option>`).join("")}
       </select>
       <br>
-      <audio id="${playerId}" loop></audio>
+      <audio id="${playerId}"></audio>
       <input type="range" min="0" max="1" step="0.01" value="0.5"
              oninput="document.getElementById('${playerId}').volume=this.value">
       <button id="${btnId}" onclick="togglePlay('${playerId}','${btnId}')">▶️ Tocar</button>
+      <button onclick="toggleLoop('${playerId}', this)">🔁 Loop Off</button>
     </div>
   `;
 
@@ -65,8 +63,10 @@ function loadTrack(playerId, btnId, src) {
   btn.textContent = "▶️ Tocar";
   btn.classList.remove("playing");
   audio.onended = () => {
-    btn.textContent = "▶️ Tocar";
-    btn.classList.remove("playing");
+    if (!audio.loop) {
+      btn.textContent = "▶️ Tocar";
+      btn.classList.remove("playing");
+    }
   };
 }
 
@@ -83,6 +83,14 @@ function togglePlay(playerId, btnId) {
     btn.textContent = "▶️ Tocar";
     btn.classList.remove("playing");
   }
+}
+
+// Ativar/desativar loop da faixa
+function toggleLoop(playerId, btn) {
+  let audio = document.getElementById(playerId);
+  audio.loop = !audio.loop;
+  btn.textContent = audio.loop ? "🔁 Loop On" : "🔁 Loop Off";
+  btn.classList.toggle("playing", audio.loop);
 }
 
 // Botão "Adicionar Faixa"
@@ -110,11 +118,9 @@ document.getElementById("stopAll").addEventListener("click", () => {
     const audio = document.getElementById(`player${i}`);
     const btn = document.getElementById(`btn${i}`);
     if (audio.src) {
-      audio.pause();  // pausa real, mantém posição
+      audio.pause();
       btn.textContent = "▶️ Tocar";
       btn.classList.remove("playing");
     }
   }
 });
-
-
