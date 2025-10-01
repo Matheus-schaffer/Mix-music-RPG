@@ -5,6 +5,7 @@ const trilhas = [
   { nome: "Combat Music Pirates of the Caribbe.mp3", arquivo: "sons/Pirates of the Caribbe- combat.mp3" },
   { nome: "Davy Jones theme", arquivo: "sons/Davy Jones theme.mp3" },
   { nome: "Tema Floresta-explo", arquivo: "sons/floresta.mp3" },
+  { nome: "Caverna Myconid", arquivo: "sons/Caverna Myconid Village.mp3" },
 ];
 
 // Lista fixa de efeitos
