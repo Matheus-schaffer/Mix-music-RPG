@@ -9,6 +9,7 @@ const trilhas = [
     { nome: "Davy Jones theme", arquivo: "sons/Davy Jones theme.mp3" },
     { nome: "Tema Floresta-explo", arquivo: "sons/floresta.mp3" },
     { nome: "Caverna Myconid", arquivo: "sons/Caverna Myconid Village.mp3" },
+    { nome: "explor", arquivo: "sons/explo.mp3" },
 ];
 
 // Lista fixa de efeitos
