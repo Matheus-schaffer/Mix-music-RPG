@@ -27,6 +27,12 @@ function connectAudio(playerId, initialVolume = 0.5) {
 
     if (trackNodes[playerId]) return trackNodes[playerId];
     
+    // VERIFICAÇÃO DE SEGURANÇA: Se o elemento <audio> não estiver pronto, retorna.
+    if (!audio) {
+        console.error(`Elemento de áudio com ID ${playerId} não encontrado.`);
+        return {};
+    }
+    
     // Cria a Fonte a partir do elemento <audio>
     let source = audioCtx.createMediaElementSource(audio);
     
@@ -37,7 +43,6 @@ function connectAudio(playerId, initialVolume = 0.5) {
 
     // Cria o Ganho (volume)
     let gain = audioCtx.createGain();
-    // Usa o valor do slider como volume inicial
     gain.gain.value = initialVolume; 
 
     // Conexão: Source -> Filter -> Gain -> Destination
@@ -51,8 +56,10 @@ function connectAudio(playerId, initialVolume = 0.5) {
  * Botão abafador (com transição suave)
  */
 function toggleMuffle(playerId, btn) {
-    // Garantir que a conexão existe antes de manipular
-    let { filter } = connectAudio(playerId); 
+    let nodes = trackNodes[playerId];
+    if (!nodes || !nodes.filter) return; // Verifica se os nós foram criados
+
+    let filter = nodes.filter; 
     let now = audioCtx.currentTime;
     
     if (filter.frequency.value < 5000) {
@@ -102,10 +109,10 @@ function addTrack() {
         </div>
     `;
 
+    // CORREÇÃO ESSENCIAL: Anexar a div ao DOM antes de criar o contexto de áudio
     document.getElementById("tracks").appendChild(div);
     
-    // NOVO: Chama connectAudio APÓS o elemento ser criado no DOM
-    // Isso garante que os nós de áudio existam para o slider de volume
+    // Agora o elemento <audio> existe e podemos conectar o Web Audio
     connectAudio(playerId, initialVolume); 
 }
 
@@ -125,9 +132,6 @@ function loadTrack(playerId, btnId, src) {
     btn.textContent = "▶️ Tocar";
     btn.classList.remove("playing");
 
-    // Já chamamos connectAudio em addTrack, mas é bom garantir que o contexto está pronto
-    connectAudio(playerId, 0.5); 
-    
     audio.onended = () => {
         btn.textContent = "▶️ Tocar";
         btn.classList.remove("playing");
@@ -138,9 +142,12 @@ function loadTrack(playerId, btnId, src) {
 function togglePlay(playerId, btnId) {
     let audio = document.getElementById(playerId);
     let btn = document.getElementById(btnId);
+
+    // Garante que o Web Audio Context esteja ativo (necessário no Chrome/Firefox)
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
+    
     if (audio.paused) {
         audio.play();
         btn.textContent = "⏸ Pausar";
@@ -169,7 +176,6 @@ addTrack();
 
 // Botões globais
 document.getElementById("playAll").addEventListener("click", () => {
-    // Tenta resumir o contexto no início da interação
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
