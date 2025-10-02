@@ -1,7 +1,5 @@
 let trackCount = 0;
-// 1. Variável global do Contexto de Áudio
 let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-// 1. Armazena os nós de cada player: { source, filter, gain }
 let trackNodes = {}; 
 
 // Lista fixa de trilhas sonoras
@@ -21,10 +19,10 @@ const efeitos = [
 ];
 
 /**
- * 2. Cria conexão Web Audio com filtro e Ganho (Volume) - CORRIGIDO
- * O volume é agora controlado pelo GainNode.
+ * Cria/Retorna a conexão Web Audio com Filtro e Ganho (Volume).
+ * Só cria os nós UMA VEZ.
  */
-function connectAudio(playerId) {
+function connectAudio(playerId, initialVolume = 0.5) {
     let audio = document.getElementById(playerId);
 
     if (trackNodes[playerId]) return trackNodes[playerId];
@@ -37,9 +35,10 @@ function connectAudio(playerId) {
     filter.type = "lowpass";
     filter.frequency.value = 20000; 
 
-    // NOVO: Cria o Ganho (volume)
+    // Cria o Ganho (volume)
     let gain = audioCtx.createGain();
-    gain.gain.value = 0.5; // Volume inicial
+    // Usa o valor do slider como volume inicial
+    gain.gain.value = initialVolume; 
 
     // Conexão: Source -> Filter -> Gain -> Destination
     source.connect(filter).connect(gain).connect(audioCtx.destination);
@@ -49,21 +48,20 @@ function connectAudio(playerId) {
 }
 
 /**
- * 4. Botão abafador (melhorado com transição suave)
+ * Botão abafador (com transição suave)
  */
 function toggleMuffle(playerId, btn) {
-    // Certifica que o contexto de áudio está conectado
+    // Garantir que a conexão existe antes de manipular
     let { filter } = connectAudio(playerId); 
     let now = audioCtx.currentTime;
     
-    // Frequência padrão (Normal) é alta (20000Hz)
     if (filter.frequency.value < 5000) {
         // Mudar para som limpo
-        filter.frequency.linearRampToValueAtTime(20000, now + 0.3); // Transição suave
+        filter.frequency.linearRampToValueAtTime(20000, now + 0.3);
         btn.textContent = "🔊 Normal";
     } else {
         // Mudar para som abafado (corte de frequências altas)
-        filter.frequency.linearRampToValueAtTime(800, now + 0.3); // Transição suave
+        filter.frequency.linearRampToValueAtTime(800, now + 0.3);
         btn.textContent = "🔇 Abafado";
     }
 }
@@ -76,6 +74,7 @@ function addTrack() {
 
     const playerId = `player${trackCount}`;
     const btnId = `btn${trackCount}`;
+    const initialVolume = 0.5; // Volume inicial padrão
 
     div.innerHTML = `
         <div class="track-box">
@@ -94,8 +93,8 @@ function addTrack() {
             <br>
             <audio id="${playerId}"></audio>
             
-            <input type="range" min="0" max="1" step="0.01" value="0.5"
-                    oninput="connectAudio('${playerId}').gain.gain.value=this.value">
+            <input type="range" min="0" max="1" step="0.01" value="${initialVolume}"
+                    oninput="trackNodes['${playerId}'].gain.gain.value=this.value">
 
             <button id="${btnId}" onclick="togglePlay('${playerId}','${btnId}')">▶️ Tocar</button>
             <button onclick="toggleLoop('${playerId}', this)">🔁 Loop Off</button>
@@ -104,6 +103,10 @@ function addTrack() {
     `;
 
     document.getElementById("tracks").appendChild(div);
+    
+    // NOVO: Chama connectAudio APÓS o elemento ser criado no DOM
+    // Isso garante que os nós de áudio existam para o slider de volume
+    connectAudio(playerId, initialVolume); 
 }
 
 // Carregar trilha ou efeito no player
@@ -122,8 +125,8 @@ function loadTrack(playerId, btnId, src) {
     btn.textContent = "▶️ Tocar";
     btn.classList.remove("playing");
 
-    // Importante: garante que a cadeia de áudio seja criada
-    connectAudio(playerId); 
+    // Já chamamos connectAudio em addTrack, mas é bom garantir que o contexto está pronto
+    connectAudio(playerId, 0.5); 
     
     audio.onended = () => {
         btn.textContent = "▶️ Tocar";
