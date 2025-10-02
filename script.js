@@ -1,6 +1,6 @@
 let trackCount = 0;
 let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let trackNodes = {}; 
+let trackNodes = {}; // Armazena os nós de áudio (source, filter, gain)
 
 // Lista fixa de trilhas sonoras
 const trilhas = [
@@ -8,7 +8,6 @@ const trilhas = [
     { nome: "Davy Jones theme", arquivo: "sons/Davy Jones theme.mp3" },
     { nome: "Tema Floresta-explo", arquivo: "sons/floresta.mp3" },
     { nome: "Caverna Myconid", arquivo: "sons/Caverna Myconid Village.mp3" },
-    { nome: "explor", arquivo: "sons/explo.mp3" },
 ];
 
 // Lista fixa de efeitos
@@ -19,33 +18,30 @@ const efeitos = [
 ];
 
 /**
- * Cria/Retorna a conexão Web Audio com Filtro e Ganho (Volume).
- * Só cria os nós UMA VEZ.
+ * Cria a cadeia de áudio (Source -> Filter -> Gain -> Destination) usando Web Audio API.
+ * Só cria os nós UMA VEZ por player.
  */
 function connectAudio(playerId, initialVolume = 0.5) {
     let audio = document.getElementById(playerId);
 
     if (trackNodes[playerId]) return trackNodes[playerId];
     
-    // VERIFICAÇÃO DE SEGURANÇA: Se o elemento <audio> não estiver pronto, retorna.
-    if (!audio) {
-        console.error(`Elemento de áudio com ID ${playerId} não encontrado.`);
-        return {};
-    }
+    // É crucial que o elemento <audio> exista no DOM neste ponto.
+    if (!audio) return {}; 
     
-    // Cria a Fonte a partir do elemento <audio>
+    // 1. Source (a tag <audio>)
     let source = audioCtx.createMediaElementSource(audio);
     
-    // Cria o Filtro (Lowpass)
+    // 2. Filter (Abafador)
     let filter = audioCtx.createBiquadFilter();
     filter.type = "lowpass";
     filter.frequency.value = 20000; 
 
-    // Cria o Ganho (volume)
+    // 3. Gain (Volume) - CORREÇÃO ESSENCIAL
     let gain = audioCtx.createGain();
     gain.gain.value = initialVolume; 
 
-    // Conexão: Source -> Filter -> Gain -> Destination
+    // Conexão da cadeia
     source.connect(filter).connect(gain).connect(audioCtx.destination);
 
     trackNodes[playerId] = { source, filter, gain };
@@ -53,11 +49,11 @@ function connectAudio(playerId, initialVolume = 0.5) {
 }
 
 /**
- * Botão abafador (com transição suave)
+ * Botão abafador (low-pass filter)
  */
 function toggleMuffle(playerId, btn) {
     let nodes = trackNodes[playerId];
-    if (!nodes || !nodes.filter) return; // Verifica se os nós foram criados
+    if (!nodes || !nodes.filter) return;
 
     let filter = nodes.filter; 
     let now = audioCtx.currentTime;
@@ -67,7 +63,7 @@ function toggleMuffle(playerId, btn) {
         filter.frequency.linearRampToValueAtTime(20000, now + 0.3);
         btn.textContent = "🔊 Normal";
     } else {
-        // Mudar para som abafado (corte de frequências altas)
+        // Mudar para som abafado
         filter.frequency.linearRampToValueAtTime(800, now + 0.3);
         btn.textContent = "🔇 Abafado";
     }
@@ -109,14 +105,13 @@ function addTrack() {
         </div>
     `;
 
-    // CORREÇÃO ESSENCIAL: Anexar a div ao DOM antes de criar o contexto de áudio
+    // CORREÇÃO CRÍTICA: Anexar a div ao DOM ANTES de chamar connectAudio
     document.getElementById("tracks").appendChild(div);
     
-    // Agora o elemento <audio> existe e podemos conectar o Web Audio
+    // Conecta o áudio após o elemento existir
     connectAudio(playerId, initialVolume); 
 }
 
-// Carregar trilha ou efeito no player
 function loadTrack(playerId, btnId, src) {
     let audio = document.getElementById(playerId);
     let btn = document.getElementById(btnId);
@@ -131,6 +126,9 @@ function loadTrack(playerId, btnId, src) {
     audio.src = src;
     btn.textContent = "▶️ Tocar";
     btn.classList.remove("playing");
+    
+    // Garante que o Web Audio Context esteja pronto ao carregar uma faixa
+    connectAudio(playerId, 0.5); 
 
     audio.onended = () => {
         btn.textContent = "▶️ Tocar";
@@ -142,8 +140,8 @@ function loadTrack(playerId, btnId, src) {
 function togglePlay(playerId, btnId) {
     let audio = document.getElementById(playerId);
     let btn = document.getElementById(btnId);
-
-    // Garante que o Web Audio Context esteja ativo (necessário no Chrome/Firefox)
+    
+    // Garante que o Web Audio Context esteja ativo (necessário por restrições do navegador)
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
@@ -159,7 +157,7 @@ function togglePlay(playerId, btnId) {
     }
 }
 
-// Loop
+// Loop (Permanece igual, pois o Web Audio API não afeta diretamente o .loop da tag <audio>)
 function toggleLoop(playerId, btn) {
     let audio = document.getElementById(playerId);
     audio.loop = !audio.loop;
